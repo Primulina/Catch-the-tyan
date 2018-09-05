@@ -1,0 +1,76 @@
+package com.company;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+
+public class GameWindow extends JFrame{
+    private static GameWindow game_window;
+    private static long time;
+    private  static Image bac;
+    private static Image g_o;
+    private static Image drop;
+    private static float d_l =200;
+    private static float d_t =-100;
+    private static float d_v=200;
+    private static int scor;
+
+
+    public static void main(String[] args) throws IOException{
+        bac = ImageIO.read(GameWindow.class.getResourceAsStream("фон.jpg"));
+        g_o = ImageIO.read(GameWindow.class.getResourceAsStream("владуся.png"));
+        drop = ImageIO.read(GameWindow.class.getResourceAsStream("девочка.png"));
+        game_window = new GameWindow();
+        game_window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        game_window.setLocation(200,100);
+        game_window.setSize(906,478);
+        game_window.setResizable(false);
+        time = System.nanoTime();
+        GameField game_field = new GameField();
+        game_field.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                int x = e.getX();
+                int y = e.getY();
+                float Drop_r = d_l + drop.getWidth(null);
+                float Drop_b = d_t + drop.getHeight(null);
+                boolean is_drop = x >= d_l && x <= Drop_r && y >= d_t && y <= Drop_b;
+                if(is_drop){
+                    d_t = -100;
+                    d_l = (int)(Math.random()*game_field.getWidth()- drop.getWidth(null));
+                    d_v = d_v + 5;
+                    scor++;
+                    game_window.setTitle("Тянок поймано " + scor );
+            } }
+        });
+
+        game_window.add(game_field);
+        game_window.setVisible(true);
+        }
+
+
+
+    private static void onRepaint(Graphics G){
+
+        long c_time = System.nanoTime();
+        float d_time = (c_time - time)*0.000000001f;
+        time = c_time;
+        d_t = d_t + d_v * d_time;
+        G.drawImage(bac,0,0, null);
+        G.drawImage(drop, (int)d_l,(int)d_t,null);
+        if(d_t>game_window.getHeight()){
+            G.drawImage(g_o, 280,120,null);}}
+
+    private static class GameField extends JPanel{
+            @Override
+        protected void paintComponent(Graphics G){
+            super.paintComponent(G);
+            onRepaint(G);
+            repaint();
+            }
+    }
+}
